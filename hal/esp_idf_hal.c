@@ -1,4 +1,5 @@
 #if defined(ESP_PLATFORM)
+
 #include "WeatherBus.h"
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
@@ -22,22 +23,29 @@ rs485_uart_t uart_dev = {
     .baud_rate = 9600
 };
 
-void sensorbus_hal_uart_init() {
+sensorbus_error_t sensorbus_hal_uart_init() {
     if (rs485_uart_init(&uart_dev) != ESP_OK) {
-        printf("Failed to initialise RS485\n");
-        return;
+        return SENSORBUS_ERR_FAILURE;
     }
+    return SENSORBUS_OK;
 }
 
-void sensorbus_hal_send_bytes(const uint8_t* data, size_t len) {
-    rs485_uart_write(&uart_dev, data, len);
+sensorbus_error_t sensorbus_hal_send_bytes(uint8_t* data, size_t len) {
+    if (rs485_uart_write(&uart_dev, data, len) != ESP_OK) {
+        return SENSORBUS_ERR_FAILURE;
+    }
+    return SENSORBUS_OK;
 }
 
-int sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms) {
-    return rs485_uart_read(&uart_dev, byte, 1, pdMS_TO_TICKS(timeout_ms));
+sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms) {
+    if(rs485_uart_read(&uart_dev, byte, 1, pdMS_TO_TICKS(timeout_ms)) != ESP_OK) {
+        return SENSORBUS_ERR_TIMEOUT;
+    }
+    return SENSORBUS_OK;
 }
 
 void sensorbus_hal_delay_ms(uint32_t ms) {
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
+
 #endif
