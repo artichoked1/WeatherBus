@@ -1,3 +1,4 @@
+#if defined(ESP_PLATFORM)
 #include "WeatherBus.h"
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
@@ -39,3 +40,4 @@ int sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms) {
 void sensorbus_hal_delay_ms(uint32_t ms) {
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
+#endif

@@ -27,6 +27,16 @@ typedef enum {
     SENSORBUS_DISCOVERY_REPLY = 0x06,
 } sensorbus_msg_type_t;
 
+// Error codes
+typedef enum {
+    SENSORBUS_OK = 0,
+    SENSORBUS_IN_PROGRESS = 1,
+    SENSORBUS_ERR_CRC = -1,
+    SENSORBUS_ERR_FORMAT = -2,
+    SENSORBUS_ERR_TIMEOUT = -3,
+    SENSORBUS_ERR_FAILURE = -4
+} sensorbus_error_t;
+
 // Parsed message struct
 typedef struct {
     uint8_t msg_type;
@@ -40,17 +50,17 @@ extern "C" {
 #endif
 
 // Public API
-void sensorbus_init(void);
-int sensorbus_send(sensorbus_msg_type_t type, uint32_t device_id, const uint8_t* payload, uint8_t len);
-int sensorbus_parser_tick(uint8_t byte, sensorbus_packet_t* out_packet); // non-blocking state machine parser
-int sensorbus_receive(sensorbus_packet_t* out_packet); // blocking wrapper
+sensorbus_error_t sensorbus_init(void);
+sensorbus_error_t sensorbus_send(sensorbus_msg_type_t type, uint32_t device_id, const uint8_t* payload, uint8_t len);
+sensorbus_error_t sensorbus_parser_tick(uint8_t byte, sensorbus_packet_t* out_packet); // non-blocking state machine parser
+sensorbus_error_t sensorbus_receive(sensorbus_packet_t* out_packet); // blocking wrapper
 void sensorbus_apply_discovery_delay(uint32_t device_id, const sensorbus_timing_config_t* config);
 
 // Hardware abstraction layer (replace with platform-specific impls)
-void sensorbus_hal_send_bytes(const uint8_t* data, size_t len);
-int  sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms);
+sensorbus_error_t sensorbus_hal_send_bytes(uint8_t* data, size_t len);
+sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms);
+sensorbus_error_t sensorbus_hal_uart_init(void);
 void sensorbus_hal_delay_ms(uint32_t ms);
-void sensorbus_hal_uart_init(void);
 
 // Utility
 uint8_t sensorbus_calc_crc8(const uint8_t* data, size_t len);
