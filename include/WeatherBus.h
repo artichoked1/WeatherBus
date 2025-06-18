@@ -15,7 +15,17 @@ typedef struct {
 // Default discovery timing config
 #define SENSORBUS_DEFAULT_SLOT_TIME_MS  10
 #define SENSORBUS_DEFAULT_MAX_DELAY_MS  64
+#define SENSORBUS_MAX_VALUE_LEN 4
 extern const sensorbus_timing_config_t SENSORBUS_DEFAULT_TIMING;
+
+
+// Maximum data bytes per record
+#define SENSORBUS_MAX_RECORD_DATA    4
+// Maximum possible record size (3-byte header + max data)
+#define SENSORBUS_MAX_RECORD_SIZE    (3 + SENSORBUS_MAX_RECORD_DATA)
+// Maximum number of TLV entries assuming every record could be full-size
+// Maximum number of full-size TLV entries (integer division truncates remainder)
+#define SENSORBUS_MAX_TLVS           (SENSORBUS_MAX_PAYLOAD / SENSORBUS_MAX_RECORD_SIZE)
 
 // Message types
 typedef enum {
@@ -37,13 +47,24 @@ typedef enum {
     SENSORBUS_ERR_FAILURE = -4
 } sensorbus_error_t;
 
-// Parsed message struct
 typedef struct {
     uint8_t msg_type;
     uint32_t device_id;
     uint8_t payload[SENSORBUS_MAX_PAYLOAD];
     uint8_t payload_len;
 } sensorbus_packet_t;
+
+typedef struct {
+    uint8_t buf[SENSORBUS_MAX_PAYLOAD];
+    uint8_t len;
+} payload_builder_t;
+
+typedef struct {
+    uint8_t        type;
+    uint8_t        index;
+    uint8_t        len;
+    const uint8_t* value;
+} sensorbus_sensor_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,6 +85,13 @@ void sensorbus_hal_delay_ms(uint32_t ms);
 
 // Utility
 uint8_t sensorbus_calc_crc8(const uint8_t* data, size_t len);
+
+sensorbus_error_t pb_init(payload_builder_t* pb);
+sensorbus_error_t pb_add_tlv(payload_builder_t* pb, uint8_t type, uint8_t index, const void* data, uint8_t data_len);
+sensorbus_error_t pb_add_float(payload_builder_t* pb, uint8_t type, uint8_t index, float value);
+sensorbus_error_t pb_add_error(payload_builder_t* pb, uint8_t type, uint8_t index);
+sensorbus_error_t pb_decode_tlv(const uint8_t* buf, uint8_t buf_len, sensorbus_sensor_t* out, size_t* out_count);
+sensorbus_error_t pb_add_query(payload_builder_t *pb, sensorbus_sensor_t *sensor);
 
 #ifdef __cplusplus
 }

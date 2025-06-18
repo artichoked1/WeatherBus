@@ -1,5 +1,4 @@
 #include "WeatherBus.h"
-#include <string.h>
 
 // This is the parser and state machine for the SensorBus protocol.
 // The message format is as follows:
