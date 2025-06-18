@@ -16,39 +16,42 @@ sensorbus_error_t pb_add_tlv(payload_builder_t* pb, uint8_t type, uint8_t index,
     pb->buf[pb->len++] = type;
     pb->buf[pb->len++] = index;
     pb->buf[pb->len++] = data_len;
-
-    // Copy the data into the buffer
-    memcpy(&pb->buf[pb->len], data, data_len);
+    if (data_len > 0 && data) {
+        memcpy(&pb->buf[pb->len], data, data_len);
+    }
     pb->len += data_len;
 
     return SENSORBUS_OK;
 }
 
-sensorbus_error_t pb_decode_tlv(const uint8_t* buf, uint8_t buf_len, sensorbus_sensor_t* out, size_t* out_count) {
+sensorbus_error_t pb_decode_tlv(const uint8_t* buf,uint8_t buf_len,sensorbus_sensor_t* out,size_t* out_count) {
     size_t count = 0;
     uint8_t pos = 0;
-    
+
     while (pos + 3 <= buf_len && count < SENSORBUS_MAX_TLVS) {
-    uint8_t t   = buf[pos++];
-    uint8_t i   = buf[pos++];
-    uint8_t L   = buf[pos++];
-    if (pos + L > buf_len) {
-    return SENSORBUS_ERR_FORMAT;
+        uint8_t t = buf[pos++];
+        uint8_t i = buf[pos++];
+        uint8_t L = buf[pos++];
+        if (pos + L > buf_len) {
+            return SENSORBUS_ERR_FORMAT;
+        }
+        out[count].type  = t;
+        out[count].index = i;
+        out[count].len   = L;
+        out[count].value = (L > 0 ? &buf[pos] : NULL);
+        pos += L;
+        count++;
     }
-    out[count].type  = t;
-    out[count].index = i;
-    out[count].len   = L;
-    out[count].value = &buf[pos];
-    pos += L;
-    count++;
-    }
-    
-    if (pos != buf_len) {
-    return SENSORBUS_ERR_FORMAT;
+    if (pos != buf_len){
+        return SENSORBUS_ERR_FORMAT;
     }
     *out_count = count;
     return SENSORBUS_OK;
-    }
+}
+
+sensorbus_error_t pb_add_descriptor(payload_builder_t* pb,uint8_t type,uint8_t index) {
+    return pb_add_tlv(pb, type, index, NULL, 0);
+}
 
 sensorbus_error_t pb_add_float(payload_builder_t* pb, uint8_t type, uint8_t index, float value) {
     return pb_add_tlv(pb, type, index, &value, sizeof(value));
