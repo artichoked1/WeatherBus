@@ -31,11 +31,15 @@ sensorbus_error_t sensorbus_init(void) {
         return SENSORBUS_ERR_FAILURE; // UART init failed
     }
 
+    sensorbus_reset_parser();
+
+    return SENSORBUS_OK;
+}
+
+void sensorbus_reset_parser(void) {
     parser_state = PARSER_WAIT_START;
     parser_length = 0;
     parser_index = 0;
-
-    return SENSORBUS_OK;
 }
 
 sensorbus_error_t sensorbus_send(sensorbus_msg_type_t type, uint32_t device_id, const uint8_t* payload, uint8_t len) {
