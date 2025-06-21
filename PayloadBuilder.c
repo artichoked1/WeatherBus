@@ -1,4 +1,5 @@
 #include "WeatherBus.h"
+#include <string.h>
 
 sensorbus_error_t pb_init(payload_builder_t* pb) {
     pb->len = 0;
