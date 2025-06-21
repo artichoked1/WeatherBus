@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 #include "RS485.h"
 #include "driver/gpio.h"
+#include "esp_timer.h"
 
 #define UART_PORT   UART_NUM_1
 #define TX_PIN      GPIO_NUM_17
@@ -50,7 +51,7 @@ sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms)
     int r = uart_read_bytes(uart_dev.uart_port, byte, 1, ticks);
 
     if (r == 1) {
-    return SENSORBUS_OK;
+        return SENSORBUS_OK;
     }
     if (timeout_ms == 0) {
         return SENSORBUS_ERR_FAILURE;
