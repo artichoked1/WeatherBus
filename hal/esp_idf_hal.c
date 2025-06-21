@@ -38,10 +38,24 @@ sensorbus_error_t sensorbus_hal_send_bytes(uint8_t* data, size_t len) {
 }
 
 sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms) {
-    if(rs485_uart_read(&uart_dev, byte, 1, pdMS_TO_TICKS(timeout_ms)) != ESP_OK) {
-        return SENSORBUS_ERR_TIMEOUT;
+    
+    TickType_t ticks;
+
+    if (timeout_ms == 0) {
+    ticks = portMAX_DELAY;
+    } else {
+    ticks = pdMS_TO_TICKS(timeout_ms);
     }
+
+    int r = uart_read_bytes(uart_dev.uart_port, byte, 1, ticks);
+
+    if (r == 1) {
     return SENSORBUS_OK;
+    }
+    if (timeout_ms == 0) {
+        return SENSORBUS_ERR_FAILURE;
+    }
+    return SENSORBUS_ERR_TIMEOUT;
 }
 
 void sensorbus_hal_delay_ms(uint32_t ms) {
