@@ -48,4 +48,8 @@ void sensorbus_hal_delay_ms(uint32_t ms) {
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
 
+uint64_t sensorbus_hal_get_time_ms() {
+    return esp_timer_get_time() / 1000; // Convert microseconds to milliseconds
+}
+
 #endif

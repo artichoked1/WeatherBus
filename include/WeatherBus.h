@@ -82,6 +82,7 @@ sensorbus_error_t sensorbus_hal_send_bytes(uint8_t* data, size_t len);
 sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms);
 sensorbus_error_t sensorbus_hal_uart_init(void);
 void sensorbus_hal_delay_ms(uint32_t ms);
+uint64_t sensorbus_hal_get_time_ms(void);
 
 // Utility
 uint8_t sensorbus_calc_crc8(const uint8_t* data, size_t len);
