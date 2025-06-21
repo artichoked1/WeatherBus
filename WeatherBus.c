@@ -1,4 +1,5 @@
 #include "WeatherBus.h"
+#include <string.h>
 
 // This is the parser and state machine for the SensorBus protocol.
 // The message format is as follows:
@@ -123,19 +124,47 @@ sensorbus_error_t sensorbus_parser_tick(uint8_t byte, sensorbus_packet_t* out_pa
     return SENSORBUS_IN_PROGRESS; // In progress
 }
 
-sensorbus_error_t sensorbus_receive(sensorbus_packet_t* out_packet) {
-    uint8_t byte;
-    // I don't like this stateful fucktuckery, but it works.
-    while (1) {
-        if (sensorbus_hal_receive_byte(&byte, 100) != SENSORBUS_OK) {
-            return SENSORBUS_ERR_TIMEOUT;
-        }
+sensorbus_error_t sensorbus_receive_blocking(sensorbus_packet_t *out) {
+    uint8_t b;
+    sensorbus_error_t res;
+    sensorbus_reset_parser();
 
-        sensorbus_error_t res = sensorbus_parser_tick(byte, out_packet);
+    while (1) {
+        // Block forever for the next byte
+        res = sensorbus_hal_receive_byte(&b, 0);
+        if (res != SENSORBUS_OK) {
+            // fatal bus error
+            return res;
+        }
+        res = sensorbus_parser_tick(b, out);
         if (res != SENSORBUS_IN_PROGRESS) {
             return res;
         }
     }
+}
+
+sensorbus_error_t sensorbus_receive_timeout(uint32_t timeout_ms,
+                                           sensorbus_packet_t *out) {
+    int64_t deadline = sensorbus_hal_get_time_ms() + 1000;
+    uint8_t b;
+    sensorbus_error_t res;
+
+    sensorbus_reset_parser();
+
+    while (sensorbus_hal_get_time_ms() < deadline) {
+        res = sensorbus_hal_receive_byte(&b, 10);
+        if (res == SENSORBUS_ERR_TIMEOUT) {
+            continue;
+        }
+        if (res != SENSORBUS_OK) {
+            return res;
+        }
+        res = sensorbus_parser_tick(b, out);
+        if (res != SENSORBUS_IN_PROGRESS) {
+            return res;
+        }
+    }
+    return SENSORBUS_ERR_TIMEOUT;
 }
 
 void sensorbus_apply_discovery_delay(uint32_t device_id, const sensorbus_timing_config_t* config) {

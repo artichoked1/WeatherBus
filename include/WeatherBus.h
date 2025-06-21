@@ -74,7 +74,8 @@ extern "C" {
 sensorbus_error_t sensorbus_init(void);
 sensorbus_error_t sensorbus_send(sensorbus_msg_type_t type, uint32_t device_id, const uint8_t* payload, uint8_t len);
 sensorbus_error_t sensorbus_parser_tick(uint8_t byte, sensorbus_packet_t* out_packet); // non-blocking state machine parser
-sensorbus_error_t sensorbus_receive(sensorbus_packet_t* out_packet); // blocking wrapper
+sensorbus_error_t sensorbus_receive_blocking(sensorbus_packet_t *out_packet);
+sensorbus_error_t sensorbus_receive_timeout(uint32_t timeout_ms, sensorbus_packet_t *out_packet);
 void sensorbus_apply_discovery_delay(uint32_t device_id, const sensorbus_timing_config_t* config);
 
 // Hardware abstraction layer (replace with platform-specific impls)
@@ -93,6 +94,8 @@ sensorbus_error_t pb_add_float(payload_builder_t* pb, uint8_t type, uint8_t inde
 sensorbus_error_t pb_add_error(payload_builder_t* pb, uint8_t type, uint8_t index);
 sensorbus_error_t pb_decode_tlv(const uint8_t* buf, uint8_t buf_len, sensorbus_sensor_t* out, size_t* out_count);
 sensorbus_error_t pb_add_query(payload_builder_t *pb, sensorbus_sensor_t *sensor);
+
+void sensorbus_reset_parser(void);
 
 #ifdef __cplusplus
 }
