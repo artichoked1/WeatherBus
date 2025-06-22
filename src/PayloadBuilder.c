@@ -1,9 +1,8 @@
 #include "WeatherBus.h"
 #include <string.h>
 
-sensorbus_error_t pb_init(payload_builder_t* pb) {
+void pb_init(payload_builder_t* pb) {
     pb->len = 0;
-    return SENSORBUS_OK;
 }
 
 sensorbus_error_t pb_add_tlv(payload_builder_t* pb, uint8_t type, uint8_t index, const void* data, uint8_t data_len) {
