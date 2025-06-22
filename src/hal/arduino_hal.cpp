@@ -1,3 +1,5 @@
+#if defined(ARDUINO_ARCH_AVR)
+
 #include "WeatherBus.h"
 #include "RS485.h"
 
@@ -34,3 +36,5 @@ sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms)
 void sensorbus_hal_delay_ms(uint32_t ms) {
     delay(ms);
 }
+
+#endif
