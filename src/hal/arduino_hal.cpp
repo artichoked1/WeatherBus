@@ -1,4 +1,4 @@
-#if defined(ARDUINO_ARCH_AVR)
+#if defined(__AVR__)
 
 #include "WeatherBus.h"
 #include "RS485.h"
@@ -23,18 +23,32 @@ sensorbus_error_t sensorbus_hal_send_bytes(uint8_t* data, size_t len) {
 }
 
 sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms) {
-  uint32_t start = millis();
-  while ((millis() - start) < timeout_ms) {
-      if (rs485_available(&uart_dev)) {
-          *byte = rs485_read(&uart_dev);
-          return SENSORBUS_OK;
-      }
-  }
-  return SENSORBUS_ERR_TIMEOUT;
+    uint32_t start = millis();
+
+    while(1) {
+        if (rs485_available(&uart_dev)) {
+            *byte = rs485_read(&uart_dev);
+            return SENSORBUS_OK;
+        }
+
+        // If timeout_ms is 0, block forever
+        if (timeout_ms == 0) {
+            continue;
+        }
+
+        // Otherwise check for timeout
+        if ((millis() - start) >= timeout_ms) {
+            return SENSORBUS_ERR_TIMEOUT;
+        }
+    }
 }
 
 void sensorbus_hal_delay_ms(uint32_t ms) {
     delay(ms);
+}
+
+uint64_t sensorbus_hal_get_time_ms() {
+    return millis();
 }
 
 #endif
