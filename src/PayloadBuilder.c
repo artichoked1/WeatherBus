@@ -69,5 +69,6 @@ sensorbus_error_t pb_add_query(payload_builder_t *pb, sensorbus_sensor_t *sensor
     }
     pb->buf[pb->len++] = sensor->type;
     pb->buf[pb->len++] = sensor->index;
+    pb->buf[pb->len++] = 0x00;
     return SENSORBUS_OK;
 }
