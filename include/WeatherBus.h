@@ -55,6 +55,7 @@
 // Maximum number of TLV entries you can fit into a packet assuming every record could be full-size
 #define SENSORBUS_MAX_TLVS (SENSORBUS_MAX_PAYLOAD / SENSORBUS_MAX_RECORD_SIZE)
 
+#define MAX_PKT   SENSORBUS_MAX_PAYLOAD
 
 //--- Structs and Enums ---//
 
@@ -255,6 +256,7 @@ void sensorbus_hal_delay_ms(uint32_t ms);
  */
 uint64_t sensorbus_hal_get_time_ms(void);
 
+void sensorbus_hal_purge_rx(void);
 
 //--- Utility ---//
 

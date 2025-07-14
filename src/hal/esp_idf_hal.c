@@ -67,4 +67,9 @@ uint64_t sensorbus_hal_get_time_ms() {
     return esp_timer_get_time() / 1000; // Convert microseconds to milliseconds
 }
 
+void sensorbus_hal_purge_rx(void) {
+    // drop any bytes in the UART driver
+    uart_flush_input(UART_NUM_1);    // or whichever UART you use
+}
+
 #endif
