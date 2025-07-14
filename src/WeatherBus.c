@@ -114,7 +114,10 @@ sensorbus_error_t sensorbus_parser_tick(uint8_t byte, sensorbus_packet_t* out_pa
             }
 
             out_packet->msg_type = parser_buffer[1];
-            out_packet->device_id = (parser_buffer[2] << 24) | (parser_buffer[3] << 16) | (parser_buffer[4] << 8) | parser_buffer[5];
+            out_packet->device_id  = (uint32_t)parser_buffer[2] << 24;
+            out_packet->device_id |= (uint32_t)parser_buffer[3] << 16;
+            out_packet->device_id |= (uint32_t)parser_buffer[4] <<  8;
+            out_packet->device_id |= (uint32_t)parser_buffer[5] <<  0;
             out_packet->payload_len = parser_length - 5;
             memcpy(out_packet->payload, &parser_buffer[6], out_packet->payload_len);
             return SENSORBUS_OK; // Packet complete
