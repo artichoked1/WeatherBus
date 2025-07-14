@@ -145,7 +145,7 @@ sensorbus_error_t sensorbus_receive_blocking(sensorbus_packet_t *out) {
 
 sensorbus_error_t sensorbus_receive_timeout(uint32_t timeout_ms,
                                            sensorbus_packet_t *out) {
-    int64_t deadline = sensorbus_hal_get_time_ms() + 1000;
+    int64_t deadline = sensorbus_hal_get_time_ms() + timeout_ms;
     uint8_t b;
     sensorbus_error_t res;
 
