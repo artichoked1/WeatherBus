@@ -34,10 +34,10 @@
 
 
 /// @brief How big a discovery "slot" that a slave waits before replying to a discovery request is.
-#define SENSORBUS_DEFAULT_SLOT_TIME_MS 10
+#define SENSORBUS_DEFAULT_SLOT_TIME_MS 25
 
 /// @brief The maximum delay range for discovery replies, in milliseconds.
-#define SENSORBUS_DEFAULT_MAX_DELAY_MS 64
+#define SENSORBUS_DEFAULT_MAX_DELAY_MS 30
 
 /// @brief The maximum length of a value in a TILV record.
 #define SENSORBUS_MAX_VALUE_LEN 4
