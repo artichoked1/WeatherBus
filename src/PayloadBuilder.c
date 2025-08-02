@@ -37,8 +37,10 @@ sensorbus_error_t pb_decode_tlv(const uint8_t* buf,uint8_t buf_len,sensorbus_sen
         }
         out[count].type  = t;
         out[count].index = i;
-        out[count].len   = L;
-        out[count].value = (L > 0 ? &buf[pos] : NULL);
+        if (L > 0) {
+          memcpy(out[count].value, &buf[pos], L);
+        }
+        out[count].len = L;
         pos += L;
         count++;
     }

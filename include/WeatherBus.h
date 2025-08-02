@@ -49,11 +49,14 @@
 /// @brief The maximum length of the "value" field in a TILV record. Usually 4 bytes for a 32-bit float.
 #define SENSORBUS_MAX_RECORD_DATA 4
 
-// Maximum possible TILV record size (3-byte TIL header + V max data)
+/// @brief Maximum possible TILV record size (3-byte TIL header + V max data)
 #define SENSORBUS_MAX_RECORD_SIZE (3 + SENSORBUS_MAX_RECORD_DATA)
 
-// Maximum number of TLV entries you can fit into a packet assuming every record could be full-size
+/// @brief Maximum number of TLV entries you can fit into a packet assuming every record could be full-size
 #define SENSORBUS_MAX_TLVS (SENSORBUS_MAX_PAYLOAD / SENSORBUS_MAX_RECORD_SIZE)
+
+/// @brief The maximum number of sensors that can be discovered in a single discovery response packet.
+#define SNENSORBUS_MAX_SENSOR_DISCOVERY_SLOTS (SENSORBUS_MAX_PAYLOAD / 2) // 2 bytes per sensor (type + index)
 
 #define MAX_PKT   SENSORBUS_MAX_PAYLOAD
 
@@ -138,7 +141,7 @@ typedef struct {
     uint8_t        type;
     uint8_t        index;
     uint8_t        len;
-    const uint8_t* value;
+    uint8_t value[SENSORBUS_MAX_RECORD_DATA];
 } sensorbus_sensor_t;
 
 
