@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 
 #include "WeatherBus.h"
 
@@ -11,7 +10,7 @@ void pb_init(payload_builder_t* pb);
 
 sensorbus_error_t pb_add_sensor(payload_builder_t* pb,
                                 uint8_t type,
-                                uint8_t fmt,
+                                sensorbus_format_t fmt,
                                 uint8_t index, 
                                 const void* data);
 
