@@ -138,11 +138,28 @@ typedef struct {
  * It is used for sending sensor data and for querying specific sensors.
  */
 typedef struct {
-    uint8_t        type;
-    uint8_t        index;
-    uint8_t        len;
-    uint8_t value[SENSORBUS_MAX_RECORD_DATA];
+    uint8_t type;                        // original sensor type ID
+    uint8_t index;                       // 5-bit slot number on the bus
+    uint8_t format;                      // 3-bit fmt code (0…7)
+    uint8_t value[SENSORBUS_MAX_VALUE_LEN];  // raw bytes, length = SENSORBUS_FMT_LEN[format]
 } sensorbus_sensor_t;
+
+typedef enum {
+    SENSORBUS_FMT_UINT8    = 0,  ///< 1 byte  unsigned
+    SENSORBUS_FMT_UINT16   = 1,  ///< 2 bytes unsigned
+    SENSORBUS_FMT_FLOAT32  = 2,  ///< 4 bytes IEEE-754 single
+    SENSORBUS_FMT_FLOAT64  = 3,  ///< 8 bytes IEEE-754 double (or custom)
+    // 4…7 reserved for future use
+} sensorbus_format_t;
+
+/// lookup table: format → number of data bytes
+static const uint8_t SENSORBUS_FMT_LEN[8] = {
+    [SENSORBUS_FMT_UINT8]   = 1,
+    [SENSORBUS_FMT_UINT16]  = 2,
+    [SENSORBUS_FMT_FLOAT32] = 4,
+    [SENSORBUS_FMT_FLOAT64] = 8,
+    // others default to 0
+};
 
 
 #ifdef __cplusplus
@@ -281,83 +298,7 @@ void sensorbus_reset_parser(void);
 
 //--- Payload Builder ---//
 
-/**
- * @brief Initialize a payload builder.
- * 
- * @param pb Pointer to the payload builder to initialize.
- * @return SENSORBUS_OK on success, or an error code.
- */
-void pb_init(payload_builder_t* pb);
 
-/**
- * @brief Add a TILV (Type-Index-Length-Value) record to the payload builder.
- * Sensor data is structured with:
- * 
- * `TYPE`: 1 byte - the type of sensor (e.g., temperature, humidity).
- * 
- * `INDEX`: 1 byte - the index of the sensor (e.g., 0 for the first sensor of that type).
- * 
- * `LENGTH`: 1 byte - the length of the value in bytes.
- * 
- * `VALUE`: variable length - the actual sensor data, usually 4 bytes for 32-bit float
- * 
- * @param pb Pointer to the payload builder.
- * @param type Type of the sensor data.
- * @param index Sensor index.
- * @param data Sensor data pointer.
- * @param data_len Length of the sensor data in bytes.
- * @return sensorbus_error_t 
- */
-sensorbus_error_t pb_add_tlv(payload_builder_t* pb, uint8_t type, uint8_t index, const void* data, uint8_t data_len);
-
-/**
- * @brief Add a float value to the payload builder.
- * This is just a wrapper around `pb_add_tlv()` for convenience.
- * 
- * @param pb Pointer to the payload builder.
- * @param type Type of the sensor data.
- * @param index Sensor index.
- * @param value Float value to add.
- * @return sensorbus_error_t 
- */
-sensorbus_error_t pb_add_float(payload_builder_t* pb, uint8_t type, uint8_t index, float value);
-
-/**
- * @brief Add an error record to the payload builder.
- * When a sensor cannot provide a value, it must return `0xFFFF` as the value.
- * This is a wrapper around `pb_add_tlv()` for convenience.
- * 
- * @param pb 
- * @param type 
- * @param index 
- * @return sensorbus_error_t 
- */
-sensorbus_error_t pb_add_error(payload_builder_t* pb, uint8_t type, uint8_t index);
-
-/**
- * @brief Decode a TLV (Type-Index-Length-Value) record from a buffer.
- * Used to parse incoming sensor data from the payload.
- * 
- * @param buf Pointer to the buffer containing the TLV records.
- * @param buf_len Length of the buffer in bytes.
- * @param out Pointer to an array of sensorbus_sensor_t to store the decoded records.
- * @param out_count Pointer to a size_t variable to store the number of decoded records.
- * @return sensorbus_error_t 
- */
-sensorbus_error_t pb_decode_tlv(const uint8_t* buf, uint8_t buf_len, sensorbus_sensor_t* out, size_t* out_count);
-
-/**
- * @brief Add a query for a sensor to the payload builder.
- * Used by the master to request data from a specific sensor. Essentially a zero-length TILV record.
- * Format follows:
- * `TYPE`: 1 byte - the type of sensor to query (e.g., temperature, humidity).
- * `INDEX`: 1 byte - the index of the sensor to query (e.g., 0 for the first sensor of that type).
- * 
- * @param pb Pointer to the payload builder.
- * @param sensor Pointer to the sensor to query.
- * @return sensorbus_error_t 
- */
-sensorbus_error_t pb_add_query(payload_builder_t *pb, sensorbus_sensor_t *sensor);
 
 #ifdef __cplusplus
 }
