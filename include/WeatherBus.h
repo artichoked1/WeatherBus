@@ -145,10 +145,11 @@ typedef struct {
 } sensorbus_sensor_t;
 
 typedef enum {
-    SENSORBUS_FMT_UINT8    = 0,  ///< 1 byte  unsigned
-    SENSORBUS_FMT_UINT16   = 1,  ///< 2 bytes unsigned
-    SENSORBUS_FMT_FLOAT32  = 2,  ///< 4 bytes IEEE-754 single
-    SENSORBUS_FMT_FLOAT64  = 3,  ///< 8 bytes IEEE-754 double (or custom)
+    SENSORBUS_FMT_UINT8    = 0,  // 1 byte  unsigned
+    SENSORBUS_FMT_UINT16   = 1,  // 2 bytes unsigned
+    SENSORBUS_FMT_FLOAT32  = 2,  // 4 bytes IEEE-754 single
+    SENSORBUS_FMT_FLOAT64  = 3,  // 8 bytes IEEE-754 double (or custom)
+    SENSORBUS_FMT_TEMP_CENTI = 4, // stored as int16_t, scaled x100
     // 4…7 reserved for future use
 } sensorbus_format_t;
 
@@ -158,6 +159,7 @@ static const uint8_t SENSORBUS_FMT_LEN[8] = {
     [SENSORBUS_FMT_UINT16]  = 2,
     [SENSORBUS_FMT_FLOAT32] = 4,
     [SENSORBUS_FMT_FLOAT64] = 8,
+    [SENSORBUS_FMT_TEMP_CENTI] = 2,
     // others default to 0
 };
 
