@@ -90,8 +90,9 @@ static inline double sensorbus_to_float64(const sensorbus_sensor_t* s) {
   memcpy(&v, s->value, sizeof(v));
   return v;
 }
-sensorbus_error_t pb_add_query(payload_builder_t* pb, uint8_t type,
-                               uint8_t index);
+
+sensorbus_error_t pb_add_query(payload_builder_t* pb, uint8_t type,uint8_t index);
+sensorbus_error_t pb_decode_query(const uint8_t* buf,uint8_t buf_len, sensorbus_sensor_t*   out,size_t* out_count);
 
 #ifdef __cplusplus
 }

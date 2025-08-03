@@ -128,3 +128,51 @@ sensorbus_error_t pb_add_query(payload_builder_t* pb, uint8_t type,
 
   return SENSORBUS_OK;
 }
+
+/**
+ * @brief Decode a buffer of 2-byte query records into an array of sensorbus_sensor_t (with no value bytes).
+ *
+ * @param buf incoming byte buffer
+ * @param buf_len length of buf
+ * @param out array to populate
+ * @param out_count pointer to size_t to receive number of queries parsed
+ * @return SENSORBUS_OK on success,
+ *         SENSORBUS_ERR_FORMAT on any parse error
+ */
+sensorbus_error_t pb_decode_query(
+    const uint8_t*        buf,
+    uint8_t               buf_len,
+    sensorbus_sensor_t*   out,
+    size_t*               out_count)
+{
+    size_t count = 0;
+    uint8_t pos = 0;
+
+    // Parse as many 2-byte entries as will fit
+    while (pos + 2 <= buf_len && count < SENSORBUS_MAX_TLVS) {
+        uint8_t type = buf[pos++];
+        uint8_t hdr  = buf[pos++];
+        uint8_t fmt  = hdr >> 5;
+        uint8_t idx  = hdr & 0x1F;
+
+        if (fmt > 7) {
+            return SENSORBUS_ERR_FORMAT;
+        }
+
+        out[count].type   = type;
+        out[count].index  = idx;
+        out[count].format = (sensorbus_format_t)fmt;
+        // No value bytes in a query. Clear?
+        // memset(out[count].value, 0, SENSORBUS_MAX_VALUE_LEN);
+
+        count++;
+    }
+
+    // if we didn’t consume exactly all bytes, its buggered
+    if (pos != buf_len) {
+        return SENSORBUS_ERR_FORMAT;
+    }
+
+    *out_count = count;
+    return SENSORBUS_OK;
+}
