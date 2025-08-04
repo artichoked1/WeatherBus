@@ -130,20 +130,6 @@ typedef struct {
     uint8_t len;
 } payload_builder_t;
 
-/**
- * @brief Sensor data structure for WeatherBus.
- * 
- * This structure represents a single sensor's data in the bus.
- * It includes the type of sensor, an index for multiple sensors of the same type,
- * It is used for sending sensor data and for querying specific sensors.
- */
-typedef struct {
-    uint8_t type;                        // original sensor type ID
-    uint8_t index;                       // 5-bit slot number on the bus
-    uint8_t format;                      // 3-bit fmt code (0…7)
-    uint8_t value[SENSORBUS_MAX_VALUE_LEN];  // raw bytes, length = SENSORBUS_FMT_LEN[format]
-} sensorbus_sensor_t;
-
 typedef enum {
     SENSORBUS_FMT_UINT8    = 0,  // 1 byte  unsigned
     SENSORBUS_FMT_UINT16   = 1,  // 2 bytes unsigned
@@ -163,6 +149,20 @@ static const uint8_t SENSORBUS_FMT_LEN[8] = {
     // others default to 0
 };
 
+
+/**
+ * @brief Sensor data structure for WeatherBus.
+ * 
+ * This structure represents a single sensor's data in the bus.
+ * It includes the type of sensor, an index for multiple sensors of the same type,
+ * It is used for sending sensor data and for querying specific sensors.
+ */
+typedef struct {
+    uint8_t type;                        // original sensor type ID
+    uint8_t index;                       // 5-bit slot number on the bus
+    sensorbus_format_t format;                      // 3-bit fmt code (0…7)
+    uint8_t value[SENSORBUS_MAX_VALUE_LEN];  // raw bytes, length = SENSORBUS_FMT_LEN[format]
+} sensorbus_sensor_t;
 
 #ifdef __cplusplus
 extern "C" {

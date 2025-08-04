@@ -26,7 +26,7 @@ void pb_init(payload_builder_t* pb) { pb->len = 0; }
  * @param data Pointer to the raw data for the sensor.
  * @return SENSORBUS_OK on success, or an error code.
  */
-sensorbus_error_t pb_add_sensor(payload_builder_t* pb, uint8_t type, sensorbus_format_t fmt, uint8_t index, const void* data) {
+sensorbus_error_t sensorbus_pb_add_sensor(payload_builder_t* pb, uint8_t type, sensorbus_format_t fmt, uint8_t index, const void* data) {
   uint8_t len = SENSORBUS_FMT_LEN[fmt];
   if (len == 0 || pb->len + 2 + len > SENSORBUS_MAX_PAYLOAD) {
     return SENSORBUS_ERR_FORMAT;
@@ -56,7 +56,7 @@ sensorbus_error_t pb_add_sensor(payload_builder_t* pb, uint8_t type, sensorbus_f
  * @return SENSORBUS_OK on success, or an error code.
  */
 sensorbus_error_t pb_add_float(payload_builder_t* pb, uint8_t type, uint8_t index, float value) {
-  return pb_add_sensor(pb, type, SENSORBUS_FMT_FLOAT32, index, &value);
+  return sensorbus_pb_add_sensor(pb, type, SENSORBUS_FMT_FLOAT32, index, &value);
 }
 
 /**
@@ -70,7 +70,7 @@ sensorbus_error_t pb_add_float(payload_builder_t* pb, uint8_t type, uint8_t inde
  * @return SENSORBUS_OK on success,
  *         SENSORBUS_ERR_FORMAT if any parsing error (truncation/invalid fmt).
  */
-sensorbus_error_t sensorbus_decode_payload(const uint8_t* buf, uint8_t buf_len, sensorbus_sensor_t* sensors, size_t* out_count) {
+sensorbus_error_t sensorbus_pb_decode_sensors(const uint8_t* buf, uint8_t buf_len, sensorbus_sensor_t* sensors, size_t* out_count) {
   size_t count = 0;
   uint8_t pos = 0;
 
@@ -92,7 +92,7 @@ sensorbus_error_t sensorbus_decode_payload(const uint8_t* buf, uint8_t buf_len, 
       return SENSORBUS_ERR_FORMAT;
     }
 
-    // fill the struct
+    // Fill the struct
     sensors[count].type = type;
     sensors[count].index = index;
     sensors[count].format = fmt;
@@ -107,18 +107,17 @@ sensorbus_error_t sensorbus_decode_payload(const uint8_t* buf, uint8_t buf_len, 
 }
 
 /**
- * @brief Add a query record to the payload builder.
+ * @brief Add a sensor descriptor to the payload builder.
  *
- * Adds a query record with the specified type and index to the
- * payload builder.
+ * For queries and discovery responses, 2-byte descriptors are used to
+ * tell what sensors are available (or what ones are requested in the case of a query)
  *
  * @param pb Pointer to the payload builder.
  * @param type Sensor type ID.
  * @param index 5-bit index for the sensor.
  * @return SENSORBUS_OK on success, or an error code.
  */
-sensorbus_error_t pb_add_query(payload_builder_t* pb, uint8_t type,
-                               uint8_t index) {
+sensorbus_error_t sensorbus_pb_add_descriptor(payload_builder_t* pb, uint8_t type, uint8_t index) {
   // need exactly 2 bytes
   if ((size_t)pb->len + 2 > SENSORBUS_MAX_PAYLOAD) {
     return SENSORBUS_ERR_FORMAT;
@@ -130,7 +129,7 @@ sensorbus_error_t pb_add_query(payload_builder_t* pb, uint8_t type,
 }
 
 /**
- * @brief Decode a buffer of 2-byte query records into an array of sensorbus_sensor_t (with no value bytes).
+ * @brief Decode a buffer of descriptors into an array of sensorbus_sensor_t structs.
  *
  * @param buf incoming byte buffer
  * @param buf_len length of buf
@@ -139,12 +138,7 @@ sensorbus_error_t pb_add_query(payload_builder_t* pb, uint8_t type,
  * @return SENSORBUS_OK on success,
  *         SENSORBUS_ERR_FORMAT on any parse error
  */
-sensorbus_error_t pb_decode_query(
-    const uint8_t*        buf,
-    uint8_t               buf_len,
-    sensorbus_sensor_t*   out,
-    size_t*               out_count)
-{
+sensorbus_error_t sensorbus_pb_decode_descriptors(const uint8_t* buf, uint8_t buf_len, sensorbus_sensor_t* out, size_t* out_count) {
     size_t count = 0;
     uint8_t pos = 0;
 

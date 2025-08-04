@@ -8,27 +8,34 @@ extern "C" {
 
 void pb_init(payload_builder_t* pb);
 
-sensorbus_error_t pb_add_sensor(payload_builder_t* pb,
+sensorbus_error_t sensorbus_pb_add_sensor(payload_builder_t* pb,
                                 uint8_t type,
                                 sensorbus_format_t fmt,
                                 uint8_t index, 
                                 const void* data);
 
-sensorbus_error_t sensorbus_decode_payload(const uint8_t* buf,
+sensorbus_error_t sensorbus_pb_decode_sensors(const uint8_t* buf,
                                           uint8_t buf_len,
                                           sensorbus_sensor_t* sensors,
                                           size_t* out_count);
 
-sensorbus_error_t pb_add_query(payload_builder_t* pb,
-                              uint8_t type,
-                              uint8_t index);
+sensorbus_error_t sensorbus_pb_add_descriptor(payload_builder_t* pb,
+                                              uint8_t type,
+                                              uint8_t index);
 
-/**
- * @brief Add a 32-bit float sensor record.
- */
-sensorbus_error_t pb_add_float(payload_builder_t* pb, uint8_t type,
-                               uint8_t index, float value);
+sensorbus_error_t sensorbus_pb_decode_descriptors(const uint8_t* buf,
+                                                  uint8_t buf_len, 
+                                                  sensorbus_sensor_t*
+                                                  out,size_t* out_count);
 
+sensorbus_error_t pb_add_float(payload_builder_t* pb, 
+                                uint8_t type,
+                                uint8_t index,
+                                float value);
+
+
+
+                                
 /**
  * @brief Read an unsigned 8-bit value.
  */
@@ -90,8 +97,11 @@ static inline double sensorbus_to_float64(const sensorbus_sensor_t* s) {
   return v;
 }
 
-sensorbus_error_t pb_add_query(payload_builder_t* pb, uint8_t type,uint8_t index);
-sensorbus_error_t pb_decode_query(const uint8_t* buf,uint8_t buf_len, sensorbus_sensor_t*   out,size_t* out_count);
+static inline float sensorbus_to_temp_centi(const sensorbus_sensor_t* s) {
+  int16_t raw;
+  memcpy(&raw, s->value, sizeof(raw));
+  return raw / 100.0f;
+}
 
 #ifdef __cplusplus
 }
