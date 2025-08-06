@@ -1,6 +1,6 @@
 #if defined(__AVR__)
 
-#include "WeatherBus.h"
+#include "weatherbus.h"
 #include "RS485.h"
 
 rs485_uart_t uart_dev = {

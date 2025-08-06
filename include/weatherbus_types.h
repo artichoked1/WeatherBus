@@ -1,4 +1,7 @@
+#pragma once
+
 /*
+ * weatherbus_types.h
  *
  * This file is part of the WeatherBus library.
  * Copyright (c) 2025 Nikolai Patrick
@@ -15,11 +18,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * This file defines the types, constants, and enums used throughout the WeatherBus library.
  */
 
-#pragma once
 #include <stdint.h>
 #include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //--- Config ---//
 
@@ -139,7 +147,7 @@ typedef enum {
     // 4…7 reserved for future use
 } sensorbus_format_t;
 
-/// lookup table: format → number of data bytes
+/// lookup table: format to number of data bytes
 static const uint8_t SENSORBUS_FMT_LEN[8] = {
     [SENSORBUS_FMT_UINT8]   = 1,
     [SENSORBUS_FMT_UINT16]  = 2,
@@ -148,7 +156,6 @@ static const uint8_t SENSORBUS_FMT_LEN[8] = {
     [SENSORBUS_FMT_TEMP_CENTI] = 2,
     // others default to 0
 };
-
 
 /**
  * @brief Sensor data structure for WeatherBus.
@@ -163,144 +170,6 @@ typedef struct {
     sensorbus_format_t format;                      // 3-bit fmt code (0…7)
     uint8_t value[SENSORBUS_MAX_VALUE_LEN];  // raw bytes, length = SENSORBUS_FMT_LEN[format]
 } sensorbus_sensor_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-//--- Public API ---//
-
-/**
- * @brief Initialize the bus.
- * This sets up UART and resets the parser state.
- * 
- * @return SENSORBUS_OK on success, or an error code.
- */
-sensorbus_error_t sensorbus_init(void);
-
-/**
- * @brief Send a message on the bus.
- * 
- * @param type Message type (e.g., QUERY, RESPONSE).
- * @param device_id 32-bit device ID.
- * @param payload Pointer to the payload data.
- * @param len Length of the payload data.
- * @return SENSORBUS_OK on success, or an error code.
- */
-sensorbus_error_t sensorbus_send(sensorbus_msg_type_t type, uint32_t device_id, const uint8_t* payload, uint8_t len);
-
-/**
- * @brief The main parser for incoming bytes.
- * It is stateful, so it takes one byte of the frame at a time and returns the parsed packet when complete.
- * 
- * @param byte 
- * @param out_packet 
- * @return SENSORBUS_OK on success, SENSORBUS_IN_PROGRESS if more bytes are needed,
- *         or an error code (e.g., SENSORBUS_ERR_CRC, SENSORBUS_ERR_FORMAT). 
- */
-sensorbus_error_t sensorbus_parser_tick(uint8_t byte, sensorbus_packet_t* out_packet);
-
-/**
- * @brief Receive a complete packet from the bus.
- * It blocks forever until a complete packet is received.
- * 
- * @param out_packet 
- * @return SENSORBUS_OK on success, or an error code.
- */
-sensorbus_error_t sensorbus_receive_blocking(sensorbus_packet_t *out_packet);
-
-/**
- * @brief Receive a packet from the bus with a timeout.
- * It will wait for up to `SENSORBUS_FRAME_TIMEOUT_MS` milliseconds for a complete packet.
- * 
- * @param timeout_ms 
- * @param out_packet 
- * @return SENSORBUS_OK on success, or an error code.
- */
-sensorbus_error_t sensorbus_receive_timeout(uint32_t timeout_ms, sensorbus_packet_t *out_packet);
-
-/**
- * @brief Apply a discovery delay based on the device ID and timing configuration.
- * This MUST be called by slaves before sending their discovery reply to avoid a stampede of replies and collisions.
- * 
- * @param device_id The 32-bit device ID of the sensor.
- * @param config Pointer to the timing configuration.
- */
-void sensorbus_apply_discovery_delay(uint32_t device_id, const sensorbus_timing_config_t* config);
-
-
-//--- Hardware Abstraction Layer ---//
-
-/* WeatherBus only has a few hardware dependencies, mainly UART and some timing stuff.
- * The HAL abstracts these dependencies so it can be ported to different platforms easily.
- * Instead of controolling the DE/RE pins directly, this is managed by the HAL to allow for potentially
- * different data-link layers to be used in the future such as CAN.
- * I have written a simple RS485 wrapper around serial for ESP-IDF and Arduino which can be found on my GitHub.
- */
-
-/**
- * @brief Send a byte array over the bus.
- * 
- * @param data Pointer to the data to send.
- * @param len Length of the data in bytes.
- * @return SENSORBUS_OK on success, or an error code.
- */
-sensorbus_error_t sensorbus_hal_send_bytes(uint8_t* data, size_t len);
-
-/**
- * @brief Receive a single byte from the bus.
- * 
- * @param byte Pointer to store the received byte.
- * @param timeout_ms Timeout in milliseconds, if set to 0, it will block forever.
- * @return SENSORBUS_OK on success, SENSORBUS_ERR_TIMEOUT if no byte was received within the timeout,
- *         or an error code.
- */
-sensorbus_error_t sensorbus_hal_receive_byte(uint8_t* byte, uint32_t timeout_ms);
-
-/**
- * @brief Initialize the UART for the bus.
- * 
- * @return SENSORBUS_OK on success, or an error code.
- */
-sensorbus_error_t sensorbus_hal_uart_init(void);
-
-/**
- * @brief Freeze the MCU for a given number of milliseconds.
- * 
- * @param ms 
- */
-void sensorbus_hal_delay_ms(uint32_t ms);
-
-/**
- * @brief Get the current run time in milliseconds.
- * 
- * @return Current time in milliseconds since boot.
- */
-uint64_t sensorbus_hal_get_time_ms(void);
-
-void sensorbus_hal_purge_rx(void);
-
-//--- Utility ---//
-
-/**
- * @brief Calculate the CRC-8 checksum for a given data buffer.
- * 
- * @param data Pointer to the data buffer.
- * @param len Length of the data buffer in bytes.
- * @return The calculated CRC-8 checksum.
- */
-uint8_t sensorbus_calc_crc8(const uint8_t* data, size_t len);
-
-/**
- * @brief Reset the parser state.
- * 
- */
-void sensorbus_reset_parser(void);
-
-
-//--- Payload Builder ---//
-
-
 
 #ifdef __cplusplus
 }
