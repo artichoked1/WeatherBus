@@ -25,3 +25,4 @@
 #include "weatherbus_parser.h"
 #include "weatherbus_crc.h"
 #include "weatherbus_transport.h"
+#include "weatherbus_ids.h"
