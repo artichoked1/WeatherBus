@@ -8,5 +8,5 @@ if(ESP_PLATFORM)
 
     idf_component_register(SRCS ${SOURCES}
                            INCLUDE_DIRS "include"
-                           REQUIRES driver ESP-RS485 esp_timer)
+                           REQUIRES driver esp_timer)
 endif()
