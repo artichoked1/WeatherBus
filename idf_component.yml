@@ -3,4 +3,4 @@ description: WeatherBus protocol implementation for ESP-IDF
 dependencies:
   ESP-RS485:
     git: "git@github.com:artichoked1/ESP-RS485.git"
-    version: "v1.0.0"
+    version: "v1.0.1"
