@@ -1,2 +1,2 @@
-version: "0.1.0"
+version: "0.0.1"
 description: WeatherBus protocol implementation for ESP-IDF
