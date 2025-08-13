@@ -143,8 +143,9 @@ typedef enum {
     SENSORBUS_FMT_UINT16   = 1,  // 2 bytes unsigned
     SENSORBUS_FMT_FLOAT32  = 2,  // 4 bytes IEEE-754 single
     SENSORBUS_FMT_FLOAT64  = 3,  // 8 bytes IEEE-754 double (or custom)
-    SENSORBUS_FMT_TEMP_CENTI = 4, // stored as int16_t, scaled x100
-    // 4…7 reserved for future use
+    SENSORBUS_FMT_SFIX16_2DP = 4, // Signed fixed-point 16-bit int with 2 decimal places, scaled x100. Good for temperatures, etc.
+    SENSORBUS_FMT_UFIX16_1DP = 5, // Unsigned fixed-point 16-bit int with 1 decimal place, scaled x10. Good for pressure.
+    // 6…7 reserved for future use
 } sensorbus_format_t;
 
 /// lookup table: format to number of data bytes
@@ -153,7 +154,8 @@ static const uint8_t SENSORBUS_FMT_LEN[8] = {
     [SENSORBUS_FMT_UINT16]  = 2,
     [SENSORBUS_FMT_FLOAT32] = 4,
     [SENSORBUS_FMT_FLOAT64] = 8,
-    [SENSORBUS_FMT_TEMP_CENTI] = 2,
+    [SENSORBUS_FMT_SFIX16_2DP] = 2,
+    [SENSORBUS_FMT_UFIX16_1DP] = 2,
     // others default to 0
 };
 
